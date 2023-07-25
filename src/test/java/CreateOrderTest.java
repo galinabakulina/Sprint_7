@@ -2,6 +2,7 @@ import data.OrderTrackId;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,19 +49,21 @@ public class CreateOrderTest {
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
+        RestAssured.baseURI = ApiHelper.URL;
     }
 
     @Test
     @DisplayName("Can create an order")
     public void createValidOrder() {
         Response response = ApiHelper.createOrder(firstName, lastName, address, metroStation, phone, rentTime, deliveryDate, comment, color);
-        response.then().assertThat().body("track", notNullValue());
+        response.then()
+                .assertThat()
+                .statusCode(201)
+                .and()
+                .body("track", notNullValue());
 
-        OrderTrackId track = response.as(OrderTrackId.class);
-        ApiHelper.cancelOrder(track.getTrack())
+        ApiHelper.cancelOrder(response.as(OrderTrackId.class).getTrack())
                 .then()
                 .statusCode(200);
     }
-
 }

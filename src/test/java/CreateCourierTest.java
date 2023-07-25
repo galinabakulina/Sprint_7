@@ -1,71 +1,65 @@
-
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class CreateCourierTest {
-
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
+        RestAssured.baseURI = ApiHelper.URL;
     }
 
     @Test
     @DisplayName("Can create courier")
     public void createValidCourier() {
-        final String login = ApiHelper.appendUniqueSuffix("galochka");
-        final String password = "12345";
-        final String firstName = "Galina";
-
-        ApiHelper.createCourier(login, password, firstName)
+        ApiHelper.createCourier(ApiHelper.LOGIN, ApiHelper.PASSWORD, ApiHelper.FIRST_NAME)
                 .then()
-                .assertThat().body("ok", equalTo(true))
+                .statusCode(201)
                 .and()
-                .statusCode(201);
+                .assertThat().body("ok", equalTo(true));
 
-        ApiHelper.deleteCourier(login, password);
-    }
-
-    @Test
-    @DisplayName("Can not create courier with missing fields")
-    public void canNotCreateCourierWithMissingFields() {
-        final String login = ApiHelper.appendUniqueSuffix("galochka");
-        final String password = "12345";
-        final String firstName = "Galina";
-
-        createCourierWithMissingFieldsAndCheckError(null, null, null);
-        createCourierWithMissingFieldsAndCheckError(null, null, firstName);
-        createCourierWithMissingFieldsAndCheckError(null, password, null);
-        createCourierWithMissingFieldsAndCheckError(null, password, firstName);
-        createCourierWithMissingFieldsAndCheckError(login, null, null);
-        createCourierWithMissingFieldsAndCheckError(login, null, firstName);
-
-        // возможно создать курьера без firstName
-        //createCourierWithMissingFieldsAndCheckError(login, password, null);
+        ApiHelper.deleteCourier(ApiHelper.LOGIN, ApiHelper.PASSWORD);
     }
 
     @Test
     @DisplayName("Can not create two identical couriers")
     public void canNotCreateDuplicatedCourier() {
-        final String login = ApiHelper.appendUniqueSuffix("galochka");
-        final String password = "12345";
-        final String firstName = "Galina";
-
-        ApiHelper.createCourier(login, password, firstName)
+        ApiHelper.createCourier(ApiHelper.LOGIN, ApiHelper.PASSWORD, ApiHelper.FIRST_NAME)
                 .then()
-                .assertThat().body("ok", equalTo(true))
+                .statusCode(201)
                 .and()
-                .statusCode(201);
+                .assertThat().body("ok", equalTo(true));
 
-        ApiHelper.createCourier(login, password, null)
+        ApiHelper.createCourier(ApiHelper.LOGIN, ApiHelper.PASSWORD, ApiHelper.FIRST_NAME)
                 .then()
-                .assertThat().body("message", equalTo("Этот логин уже используется. Попробуйте другой."))
+                .statusCode(409)
                 .and()
-                .statusCode(409);
+                .assertThat().body("message", equalTo("Этот логин уже используется. Попробуйте другой."));
 
-        ApiHelper.deleteCourier(login, password);
+        ApiHelper.deleteCourier(ApiHelper.LOGIN, ApiHelper.PASSWORD);
+    }
+
+    @Test
+    @DisplayName("Can not create courier with missing login and password")
+    public void canNotCreateCourierWithMissingFields() {
+        createCourierWithMissingFieldsAndCheckError(null, null, null);
+        createCourierWithMissingFieldsAndCheckError(null, null, ApiHelper.FIRST_NAME);
+    }
+
+    @Test
+    @DisplayName("Can not create courier without login")
+    public void canNotCreateCourierWithoutLogin() {
+
+        createCourierWithMissingFieldsAndCheckError(null, ApiHelper.PASSWORD, null);
+        createCourierWithMissingFieldsAndCheckError(null, ApiHelper.PASSWORD, ApiHelper.FIRST_NAME);
+    }
+    @Test
+    @DisplayName("Can not create courier without password")
+    public void canNotCreateCourierWithoutPassword() {
+        createCourierWithMissingFieldsAndCheckError(ApiHelper.LOGIN, null, null);
+        createCourierWithMissingFieldsAndCheckError(ApiHelper.LOGIN, null, ApiHelper.FIRST_NAME);
     }
 
     private void createCourierWithMissingFieldsAndCheckError(String login, String password, String firstName) {

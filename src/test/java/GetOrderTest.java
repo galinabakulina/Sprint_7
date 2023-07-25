@@ -12,10 +12,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class GetOrderTest {
     private OrderTrackId track;
-
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
+        RestAssured.baseURI = ApiHelper.URL;
+
         String firstName = "Галина";
         String lastName = "Бакулина";
         String address = "Ходынский бульвар 13-219";
@@ -39,6 +39,7 @@ public class GetOrderTest {
                 .and()
                 .assertThat()
                 .body("order.id", notNullValue());
+
     }
 
     @Test

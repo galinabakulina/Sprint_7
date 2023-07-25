@@ -9,55 +9,50 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class DeleteCourierTest {
-    private String login;
-    private String password;
+    private CourierId id;
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
-        login = ApiHelper.appendUniqueSuffix("galochka");
-        password = "12345";
-        ApiHelper.createCourier(login, password, null);
+        RestAssured.baseURI = ApiHelper.URL;
     }
 
     @Test
     @DisplayName("Can delete courier with valid id")
     @Description("")
     public void deleteValidCourier() {
-        CourierId id = ApiHelper.login(login, password)
+        ApiHelper.createCourier(ApiHelper.LOGIN,ApiHelper.PASSWORD, null);
+        id = ApiHelper.login(ApiHelper.LOGIN,ApiHelper.PASSWORD)
                 .as(CourierId.class);
-
         ApiHelper.deleteCourier(id)
                 .then()
-                .assertThat().body("ok", equalTo(true))
+                .statusCode(200)
                 .and()
-                .statusCode(200);
+                .assertThat().body("ok", equalTo(true));
     }
 
     @Test
     @DisplayName("Can not delete courier without id")
     public void canNotDeleteCourierWithoutId() {
-        CourierId id = new CourierId(ApiHelper.MISSING_ID);
+        ApiHelper.createCourier(ApiHelper.LOGIN,ApiHelper.PASSWORD, null);
+        id = new CourierId(ApiHelper.MISSING_ID);
         ApiHelper.deleteCourier(id)
                 .then()
-                .assertThat().body("message", equalTo("Not Found."))
+                .statusCode(404)
                 .and()
-                .statusCode(404);
+                .assertThat().body("message", equalTo("Not Found."));
+        ApiHelper.deleteCourier(ApiHelper.LOGIN,ApiHelper.PASSWORD);
     }
 
     @Test
     @DisplayName("Can not delete courier with wrong id")
     public void canNotDeleteCourierWithWrongId() {
+        ApiHelper.createCourier(ApiHelper.LOGIN,ApiHelper.PASSWORD, null);
         CourierId id = new CourierId(ApiHelper.WRONG_ID);
         ApiHelper.deleteCourier(id)
                 .then()
-                .assertThat().body("message", equalTo("Курьера с таким id нет."))
+                .statusCode(404)
                 .and()
-                .statusCode(404);
-    }
-
-    @After
-    public void tearDown(){
-        ApiHelper.deleteCourier(login, password);
+                .assertThat().body("message", equalTo("Курьера с таким id нет."));
+        ApiHelper.deleteCourier(ApiHelper.LOGIN,ApiHelper.PASSWORD);
     }
 }

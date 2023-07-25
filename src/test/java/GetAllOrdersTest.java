@@ -9,7 +9,7 @@ import org.junit.Test;
 public class GetAllOrdersTest {
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
+        RestAssured.baseURI = ApiHelper.URL;
     }
 
     @Test

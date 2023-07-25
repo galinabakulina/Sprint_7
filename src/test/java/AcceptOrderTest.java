@@ -10,19 +10,16 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class AcceptOrderTest {
-    private String login;
-    private String password;
     private CourierId courierId;
     private OrderTrackId track;
     private OrderProfileContainer order;
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
-        login = ApiHelper.appendUniqueSuffix("galo4ka");
-        password = "1";
-        ApiHelper.createCourier(login, password, "Мой курьер");
-        courierId = ApiHelper.login(login, password).as(CourierId.class);
+        RestAssured.baseURI = ApiHelper.URL;
+
+        ApiHelper.createCourier(ApiHelper.LOGIN, ApiHelper.PASSWORD, ApiHelper.FIRST_NAME);
+        courierId = ApiHelper.login(ApiHelper.LOGIN, ApiHelper.PASSWORD).as(CourierId.class);
 
         String firstName = "Галина";
         String lastName = "Бакулина";
@@ -49,16 +46,19 @@ public class AcceptOrderTest {
                 .and()
                 .assertThat()
                 .body("ok", equalTo(true));
+
         ApiHelper.getOrder(track.getTrack())
                 .then()
                 .assertThat()
-                .body("order.courierFirstName", equalTo("Мой курьер"));
+                .body("order.courierFirstName", equalTo(ApiHelper.FIRST_NAME));
+
+
     }
 
     @Test
     @DisplayName("Can not accept order without courierId")
     public void canNotAcceptOrderWithoutCourierId() {
-        ApiHelper.acceptOrder(ApiHelper.MISSING_ID , order.getOrder().getId())
+        ApiHelper.acceptOrder(ApiHelper.MISSING_ID, order.getOrder().getId())
                 .then()
                 .statusCode(400)
                 .and()
@@ -86,11 +86,12 @@ public class AcceptOrderTest {
                 .and()
                 .assertThat()
                 .body("message", equalTo("Заказа с таким id не существует"));
+
     }
 
     @After
     public void tearDown(){
-        ApiHelper.deleteCourier(login, password);
+        ApiHelper.deleteCourier(ApiHelper.LOGIN, ApiHelper.PASSWORD);
         ApiHelper.cancelOrder(track.getTrack());
     }
 }

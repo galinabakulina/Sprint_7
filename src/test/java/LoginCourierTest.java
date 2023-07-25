@@ -8,37 +8,33 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class LoginCourierTest {
-    private String login;
-    private String password;
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
-        login = ApiHelper.appendUniqueSuffix("galochka");
-        password = "12345";
-        ApiHelper.createCourier(login, password, null);
+        RestAssured.baseURI = ApiHelper.URL;
+        ApiHelper.createCourier(ApiHelper.LOGIN, ApiHelper.PASSWORD, null);
     }
 
     @Test
     @DisplayName("Valid courier can login")
     public void loginWithValidFields() {
-        ApiHelper.login(login, password)
+        ApiHelper.login(ApiHelper.LOGIN, ApiHelper.PASSWORD)
                 .then()
-                .assertThat().body("id", notNullValue())
+                .statusCode(200)
                 .and()
-                .statusCode(200);
+                .assertThat().body("id", notNullValue());
     }
 
     @Test
     @DisplayName("Courier without login can not login")
     public void canNotLoginWithMissingFields() {
-        ApiHelper.login(null, password)
+        ApiHelper.login(null, ApiHelper.PASSWORD)
                 .then()
-                .assertThat().body("message",  equalTo("Недостаточно данных для входа"))
+                .statusCode(400)
                 .and()
-                .statusCode(400);
+                .assertThat().body("message",  equalTo("Недостаточно данных для входа"));
 /*
-        ApiHelper.login(login, null)
+        ApiHelper.login(ApiHelper.LOGIN, null)
                 .then()
                 .assertThat()
                 .statusCode(504);
@@ -53,25 +49,26 @@ public class LoginCourierTest {
     @Test
     @DisplayName("Courier with wrong password can not login")
     public void canNotLoginWithWrongPassword() {
-        ApiHelper.login(login, "wrong_password")
+        ApiHelper.login(ApiHelper.LOGIN, "wrong_password")
                 .then()
-                .assertThat().body("message", equalTo("Учетная запись не найдена"))
+                .statusCode(404)
                 .and()
-                .statusCode(404);
+                .assertThat().body("message", equalTo("Учетная запись не найдена"));
     }
 
     @Test
     @DisplayName("Courier with nonexistent login can not login")
     public void canNotLoginWithWrongLogin() {
-        ApiHelper.login("wrong_login", password)
+        ApiHelper.login("wrong_login", ApiHelper.PASSWORD)
                 .then()
-                .assertThat().body("message", equalTo("Учетная запись не найдена"))
+                .statusCode(404)
                 .and()
-                .statusCode(404);
+                .assertThat().body("message", equalTo("Учетная запись не найдена"));
     }
 
     @After
-    public void tearDown(){
-        ApiHelper.deleteCourier(login, password);
+    public  void  tearDown(){
+        ApiHelper.deleteCourier(ApiHelper.LOGIN, ApiHelper.PASSWORD);
     }
+
 }
