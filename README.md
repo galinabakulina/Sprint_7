@@ -1,6 +1,6 @@
 # Sprint_7
 
-###Тестирование API учебного сервиса. 
+### Тестирование API учебного сервиса. 
 
 Документация qa-scooter.praktikum-services.ru/docs/.
 
